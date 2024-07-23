@@ -20,7 +20,6 @@ function AppProvider({ children }: { children: React.ReactNode }) {
     const peer = peerService.initialize(user.id);
 
     peer.on("open", (id) => {
-      console.log(id);
       setPeerId(id);
       setPeer(peer);
     });
