@@ -1,18 +1,21 @@
-import React from "react";
-import { ChevronDown } from "lucide-react";
+import CategoriesSelect from "./shared/categories-select";
+import { Input } from "./ui/input";
+import List from "./list";
 
 function Home() {
   return (
-    <div>
-      <div className="flex">
-        <button>
-          Categories <ChevronDown />
-        </button>
+    <section>
+      <div className=" mb-6 md:mb-16 flex flex-col-reverse md:flex-row gap-6 justify-between">
+        <CategoriesSelect />
 
-        <input type="text" />
+        <Input
+          className="max-w-[372px] bg-secondary rounded-full"
+          placeholder="Search"
+        />
       </div>
-      List
-    </div>
+
+      <List />
+    </section>
   );
 }
 

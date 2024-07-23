@@ -5,8 +5,14 @@ import { VitePWA, type VitePWAOptions } from "vite-plugin-pwa";
 import react from "@vitejs/plugin-react";
 
 const manifestForPlugin: Partial<VitePWAOptions> = {
+  // add this to cache all the imports
+  workbox: {
+    globPatterns: ["**/*"],
+  },
+  // add this to cache all the
+  // static assets in the public folder
+  includeAssets: ["**/*"],
   registerType: "prompt",
-  includeAssets: [],
   manifest: {
     name: "Carsle",
     short_name: "Carsle",

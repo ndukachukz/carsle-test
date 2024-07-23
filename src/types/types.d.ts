@@ -11,3 +11,23 @@ interface PeerState {
   readonly loading: boolean;
   readonly started: boolean;
 }
+
+// User.ts
+interface User {
+  id: string;
+  name: string;
+  balance: number;
+  isAgent: boolean;
+  photo_url: string;
+}
+
+// Call.ts
+interface Call {
+  id: string;
+  callerId: string;
+  receiverId: string;
+  startTime: number;
+  endTime?: number;
+  duration?: number;
+  cost?: number;
+}

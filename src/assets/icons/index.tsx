@@ -7,6 +7,7 @@ import UserAddSVG from "./User_fill_add.svg";
 import CheckRoundSVG from "./Check_round_fill.svg";
 import SettingSVG from "./Setting_alt_fill.svg";
 import LogoutSvg from "./logout.svg";
+import VerificationSvg from "./Vector.svg";
 
 import { HTMLAttributes } from "react";
 
@@ -55,5 +56,16 @@ export const SettingIcon = (props: Props) => {
 export const LogoutIcon = (props: Props) => {
   return (
     <img src={LogoutSvg} alt="" className="w-[44px] h-[44px]" {...props} />
+  );
+};
+
+export const VerificationIcon = (props: Props) => {
+  return (
+    <img
+      src={VerificationSvg}
+      alt=""
+      className="w-[44px] h-[44px]"
+      {...props}
+    />
   );
 };

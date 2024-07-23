@@ -66,4 +66,64 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  font-face {
+    font-family: "Poppins";
+    src: local("Poppins-Regular.ttf"),
+      url("./assets/fonts/Poppins/Poppins-Regular.ttf") format("truetype");
+    font-style: normal;
+  }
+
+  font-face {
+    font-family: "Poppins";
+    src: url("./assets/fonts/Poppins/Poppins-Thin.ttf") format("truetype");
+    font-weight: 100;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "Poppins";
+    src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "Poppins";
+    src: url("./assets/fonts/Poppins/Poppins-ExtraBold.ttf") format("truetype");
+    font-weight: 800;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "Poppins";
+    src: local("Poppins-Italic.ttf"),
+      url("./assets/fonts/Poppins/Poppins-Italic.ttf") format("truetype");
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  @font-face {
+    font-family: "Poppins";
+    src: local("Poppins-SemiBold.ttf"),
+      url("./assets/fonts/Poppins/Poppins-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "Poppins";
+    src: local("Poppins-Light.ttf"),
+      url("./assets/fonts/Poppins/Poppins-Light.ttf") format("truetype");
+    font-weight: 300;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: "Poppins";
+    src: local("Poppins-Medium.ttf"),
+      url("./assets/fonts/Poppins/Poppins-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+  }
 }
