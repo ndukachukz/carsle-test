@@ -13,6 +13,8 @@ interface PeerState {
   setCurrentVideo(currentVideo: PeerState["currentVideo"]): void;
 
   initialize(userId: string): Peer;
+  call(userId: string): Promise<void>;
+  answer(call: MediaConnection): Promise<void>;
 }
 
 export const usePeerStore = create<PeerState>()((set) => ({
@@ -33,43 +35,42 @@ export const usePeerStore = create<PeerState>()((set) => ({
 
     return peer;
   },
+  call: async (userId: string) => {
+    const peer = new Peer();
+
+    // Initialize PeerJS call here
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+
+    if (!peer) throw new Error("Peer not initialized");
+
+    set(() => ({ currentVideo: stream }));
+
+    const call = peer.call(userId, stream);
+
+    call.on("stream", (remoteStream) => {
+      set(() => ({ remoteVideo: remoteStream }));
+    });
+
+    console.log(call);
+  },
+
+  answer: async (call: MediaConnection) => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+
+    console.log("MEDIA STREAM => ", stream);
+    set(() => ({ currentVideo: stream }));
+
+    call.answer(stream);
+
+    call.on("stream", (remoteStream) => {
+      console.log("REMOTE STREAM => ", remoteStream);
+      set(() => ({ remoteVideo: remoteStream }));
+    });
+  },
 }));
-
-export async function call(userId: string) {
-  const peer = new Peer();
-
-  // Initialize PeerJS call here
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true,
-  });
-
-  if (!peer) throw new Error("Peer not initialized");
-
-  usePeerStore.getState().setCurrentVideo(stream);
-
-  const call = peer.call(userId, stream);
-
-  call.on("stream", (remoteStream) => {
-    usePeerStore.getState().setRemoteVideo(remoteStream);
-  });
-
-  console.log(call);
-}
-
-export async function answer(call: MediaConnection) {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true,
-  });
-
-  console.log("MEDIA STREAM => ", stream);
-  usePeerStore.getState().setCurrentVideo(stream);
-
-  call.answer(stream);
-
-  call.on("stream", (remoteStream) => {
-    console.log("REMOTE STREAM => ", remoteStream);
-    usePeerStore.getState().setRemoteVideo(remoteStream);
-  });
-}

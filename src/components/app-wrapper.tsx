@@ -2,20 +2,22 @@ import React, { useEffect } from "react";
 import { useAppStore } from "@/store/app-store";
 import { useAuth } from "@/hooks/useAuth";
 import CallDialog from "./call-dialog";
-import { answer, usePeerStore } from "@/store/peer-store";
+import { usePeerStore } from "@/store/peer-store";
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  const { setPeerId, initialize, peer } = usePeerStore((store) => ({
-    setCurrentVideo: store.setCurrentVideo,
-    setRemoteVideo: store.setRemoteVideo,
+  const { setPeerId, initialize, peer, answer } = usePeerStore((store) => ({
     setPeerId: store.setPeerId,
+    answer: store.answer,
     initialize: store.initialize,
     peer: store.peer,
   }));
 
-  const openCallDialog = useAppStore((store) => store.openCallDialog);
+  const { openCallDialog, closeCallDialog } = useAppStore((store) => ({
+    openCallDialog: store.openCallDialog,
+    closeCallDialog: store.closeCallDialog,
+  }));
 
   useEffect(() => {
     if (user && !peer) initialize(user.id);
@@ -37,8 +39,8 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       console.log(error);
     });
 
-    peer.on("disconnected", (reason) => {
-      console.log("disconnected from signaling server ", reason);
+    peer.on("disconnected", (id) => {
+      console.log("disconnected from signaling server ", id);
     });
 
     peer.on("call", async (call) => {
@@ -46,10 +48,15 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
 
       if (confirm(`Accept call from ${call.peer}?`)) {
         openCallDialog();
-        answer(call);
+        await answer(call);
       }
     });
-  }, []);
+
+    return () => {
+      peer.destroy();
+      closeCallDialog();
+    };
+  }, [peer]);
 
   return (
     <>

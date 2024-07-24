@@ -25,15 +25,8 @@ export default function Call({ receiverId }: { receiverId: string }) {
         </>
       ) : (
         <div>
-          <h1>Current user id is {}</h1>
-
-          <div>
-            <video ref={remoteVideoRef} className="w-full h-1/2" />
-          </div>
-
-          <div>
-            <video ref={currentUserVideoRef} className="w-full h-1/2" muted />
-          </div>
+          <video ref={remoteVideoRef} className="w-full h-1/2" />
+          <video ref={currentUserVideoRef} className="w-full h-1/2" muted />
 
           <Button onClick={endCall}>End Call</Button>
         </div>

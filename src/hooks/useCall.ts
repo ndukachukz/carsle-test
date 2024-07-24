@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 // import { api } from "../lib/services/api";
-import { call, usePeerStore } from "@/store/peer-store";
+import { usePeerStore } from "@/store/peer-store";
 
 // const CHARGE_RATE = 0.1; // $0.1 per second
 
 export function useCall(currentUser: User | null) {
-  const [activeCall, setActiveCall] = useState<Call | null>(null);
+  const [activeCall, setActiveCall] = useState<Omit<Call, "id"> | null>(null);
 
-  const { currentVideo, remoteVideo } = usePeerStore((store) => ({
+  const { currentVideo, remoteVideo, call } = usePeerStore((store) => ({
     currentVideo: store.currentVideo,
     remoteVideo: store.remoteVideo,
-    setRemoteVideo: store.setRemoteVideo,
-    setCurrentVideo: store.setCurrentVideo,
     peer: store.peer,
+    call: store.call,
   }));
 
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -21,12 +20,13 @@ export function useCall(currentUser: User | null) {
   const startCall = async (receiverId: string) => {
     if (!currentUser) return;
 
-    /* 
     const newCall: Omit<Call, "id"> = {
       callerId: currentUser.id,
       receiverId,
       startTime: Date.now(),
-    }; */
+    };
+
+    setActiveCall(newCall);
 
     // const createdCall = await api.createCall(newCall);
 
@@ -67,16 +67,16 @@ export function useCall(currentUser: User | null) {
   };
 
   useEffect(() => {
-    if (remoteVideo && remoteVideoRef.current) {
+    if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteVideo;
       remoteVideoRef.current.play();
     }
 
-    if (currentVideo && currentUserVideoRef.current) {
+    if (currentUserVideoRef.current) {
       currentUserVideoRef.current.srcObject = currentVideo;
       currentUserVideoRef.current.play();
     }
-  }, [currentVideo, remoteVideo]);
+  }, [remoteVideo, currentVideo, remoteVideoRef, currentUserVideoRef]);
 
   return {
     activeCall,
