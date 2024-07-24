@@ -7,14 +7,13 @@ import { answer, usePeerStore } from "@/store/peer-store";
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  const { setCurrentVideo, setRemoteVideo, setPeerId, initialize, peer } =
-    usePeerStore((store) => ({
-      setCurrentVideo: store.setCurrentVideo,
-      setRemoteVideo: store.setRemoteVideo,
-      setPeerId: store.setPeerId,
-      initialize: store.initialize,
-      peer: store.peer,
-    }));
+  const { setPeerId, initialize, peer } = usePeerStore((store) => ({
+    setCurrentVideo: store.setCurrentVideo,
+    setRemoteVideo: store.setRemoteVideo,
+    setPeerId: store.setPeerId,
+    initialize: store.initialize,
+    peer: store.peer,
+  }));
 
   const openCallDialog = useAppStore((store) => store.openCallDialog);
 

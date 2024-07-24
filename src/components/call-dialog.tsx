@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,13 +16,7 @@ const CallDialog = () => {
 
   const { user: currentUser } = useAuth();
 
-  const {
-    activeCall,
-    startCall,
-    endCall,
-    remoteVideoRef,
-    currentUserVideoRef,
-  } = useCall(currentUser);
+  const { endCall, remoteVideoRef, currentUserVideoRef } = useCall(currentUser);
 
   useEffect(() => {
     console.log("CallDialog", dialogOpen);

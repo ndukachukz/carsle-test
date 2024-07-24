@@ -1,7 +1,6 @@
 import { useCall } from "../hooks/useCall";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./ui/button";
-import { useEffect } from "react";
 
 export default function Call({ receiverId }: { receiverId: string }) {
   const { user: currentUser } = useAuth();

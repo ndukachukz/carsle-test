@@ -9,7 +9,7 @@ import {
 } from "./ui/dialog";
 import Call from "./call";
 
-const ListItem = ({ id, isAgent, name, photo_url }: User) => {
+const ListItem = ({ id, name, photo_url }: User) => {
   return (
     <Dialog>
       <DialogTrigger asChild>

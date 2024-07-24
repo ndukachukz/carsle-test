@@ -14,7 +14,7 @@ export function useAuth() {
       api
         .getUser(storedUserId)
         .then(setUser)
-        .then((response) => {})
+        .then(() => {})
         .catch(() => {
           localStorage.removeItem("userId");
         });
