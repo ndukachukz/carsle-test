@@ -4,9 +4,13 @@ import { LogoutIcon } from "../../assets/icons";
 import { NAV_MENUS } from "../../lib/constants";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { LogInIcon } from "lucide-react";
 
 function Sidebar() {
   const location = useLocation();
+  const { signOut, user, signIn } = useAuth();
+
   return (
     <aside className="sticky top-0 left-0  hidden lg:flex flex-col w-64 h-screen py-8 overflow-y-auto overflow-x-hidden bg-secondary border-r rtl:border-r-0 rtl:border-l">
       <div className="flex flex-col justify-between flex-1 w-full mt-6">
@@ -42,9 +46,20 @@ function Sidebar() {
 
         <div>
           <div className="flex flex-col items-center ">
-            <Button className="gap-5 bg-[#FA6C6C]" size={"lg"}>
-              <LogoutIcon className="size-30" /> Logout
-            </Button>
+            {user && (
+              <Button
+                className="gap-5 bg-[#FA6C6C]"
+                size={"lg"}
+                onClick={signOut}
+              >
+                <LogoutIcon className="size-30" /> Logout
+              </Button>
+            )}
+            {!user && (
+              <Button className="gap-5" size={"lg"} onClick={signIn}>
+                <LogInIcon className="size-30" /> Log in
+              </Button>
+            )}
           </div>
         </div>
       </div>

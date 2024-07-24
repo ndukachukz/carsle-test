@@ -1,11 +1,20 @@
-import { useRef, useState } from "react";
-import { peerService } from "../lib/services/peer";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/services/api";
+import { call, usePeerStore } from "@/store/peer-store";
 
 const CHARGE_RATE = 0.1; // $0.1 per second
 
 export function useCall(currentUser: User | null) {
   const [activeCall, setActiveCall] = useState<Call | null>(null);
+
+  const { currentVideo, remoteVideo } = usePeerStore((store) => ({
+    currentVideo: store.currentVideo,
+    remoteVideo: store.remoteVideo,
+    setRemoteVideo: store.setRemoteVideo,
+    setCurrentVideo: store.setCurrentVideo,
+    peer: store.peer,
+  }));
+
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const currentUserVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -21,13 +30,9 @@ export function useCall(currentUser: User | null) {
     const createdCall = await api.createCall(newCall);
     setActiveCall(createdCall);
 
-    // Initialize PeerJS call here
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
+    console.log("Calling... ", receiverId);
 
-    peerService.call(receiverId, stream);
+    await call(receiverId);
   };
 
   const endCall = async () => {
@@ -60,6 +65,18 @@ export function useCall(currentUser: User | null) {
 
     setActiveCall(null);
   };
+
+  useEffect(() => {
+    if (remoteVideo && remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = remoteVideo;
+      remoteVideoRef.current.play();
+    }
+
+    if (currentVideo && currentUserVideoRef.current) {
+      currentUserVideoRef.current.srcObject = currentVideo;
+      currentUserVideoRef.current.play();
+    }
+  }, [currentVideo, remoteVideo]);
 
   return {
     activeCall,

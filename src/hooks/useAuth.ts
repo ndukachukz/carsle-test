@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { api } from "../lib/services/api";
-import { useAppStore } from "@/store/app-store";
+import { useUserStore } from "@/store/user-store";
 
 export function useAuth() {
-  const { setUser, user } = useAppStore(({ user, setUser }) => ({
+  const { setUser, user } = useUserStore(({ user, setUser }) => ({
     user,
     setUser,
   }));

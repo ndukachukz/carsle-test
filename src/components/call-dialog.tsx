@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,8 +24,14 @@ const CallDialog = () => {
     currentUserVideoRef,
   } = useCall(currentUser);
 
+  useEffect(() => {
+    console.log("CallDialog", dialogOpen);
+
+    if (dialogOpen) console.log("CallDialog", dialogOpen);
+  }, [dialogOpen]);
+
   return (
-    <Dialog defaultOpen={dialogOpen}>
+    <Dialog defaultOpen={dialogOpen} open={dialogOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Incoming Call</DialogTitle>
@@ -34,7 +40,9 @@ const CallDialog = () => {
 
         <div>
           <video ref={remoteVideoRef} />
+        </div>
 
+        <div>
           <video ref={currentUserVideoRef} />
         </div>
 

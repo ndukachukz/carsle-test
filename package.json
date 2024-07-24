@@ -19,6 +19,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "express": "^4.19.2",
+    "json-server": "^1.0.0-beta.1",
     "lucide-react": "^0.414.0",
     "peer": "^1.0.2",
     "peerjs": "^1.5.4",

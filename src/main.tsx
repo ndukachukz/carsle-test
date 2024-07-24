@@ -4,14 +4,14 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 
 import "./index.css";
-import AppProvider from "./components/app-provider.tsx";
+import AppWrapper from "./components/app-wrapper.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Suspense fallback={"loading..."}>
-      <AppProvider>
+      <AppWrapper>
         <App />
-      </AppProvider>
+      </AppWrapper>
     </Suspense>
   </React.StrictMode>
 );

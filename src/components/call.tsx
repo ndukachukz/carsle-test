@@ -18,13 +18,6 @@ export default function Call({ receiverId }: { receiverId: string }) {
     startCall(receiverId);
   };
 
-  useEffect(() => {
-    if (remoteVideoRef.current && currentUserVideoRef.current) {
-      console.log(remoteVideoRef.current);
-      console.log(currentUserVideoRef.current);
-    }
-  }, [currentUserVideoRef.current, remoteVideoRef.current]);
-
   return (
     <div>
       {!activeCall ? (
@@ -40,7 +33,7 @@ export default function Call({ receiverId }: { receiverId: string }) {
           </div>
 
           <div>
-            <video ref={currentUserVideoRef} className="w-full h-1/2" />
+            <video ref={currentUserVideoRef} className="w-full h-1/2" muted />
           </div>
 
           <Button onClick={endCall}>End Call</Button>
