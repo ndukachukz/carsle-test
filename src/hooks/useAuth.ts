@@ -11,7 +11,13 @@ export function useAuth() {
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
-      api.getUser(storedUserId).then(setUser);
+      api
+        .getUser(storedUserId)
+        .then(setUser)
+        .then((response) => {})
+        .catch(() => {
+          localStorage.removeItem("userId");
+        });
     }
   }, []);
 
