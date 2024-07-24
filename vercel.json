@@ -1,0 +1,3 @@
+{
+  "buildCommands": "sh vercel.sh"
+}

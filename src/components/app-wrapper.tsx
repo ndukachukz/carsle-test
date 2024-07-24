@@ -27,6 +27,8 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    console.log("USER => ", user);
+
     peer.on("open", (id) => {
       setPeerId(id);
       console.log("PEER ID: " + peer.id);
@@ -49,10 +51,6 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       }
     });
   }, []);
-
-  useEffect(() => {
-    if (user) console.log("USER => ", user);
-  }, [user]);
 
   return (
     <>
