@@ -3,17 +3,26 @@ import { useAppStore } from "@/store/app-store";
 import { useAuth } from "@/hooks/useAuth";
 import IncomingCallDialog from "./call-dialog";
 import { usePeerStore } from "@/store/peer-store";
+import { onValue, ref } from "firebase/database";
+import { db } from "@/lib/config/firebase";
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  const { initialize, peer, answer } = usePeerStore((store) => ({
+  const { initialize, peer, answer, activeCall } = usePeerStore((store) => ({
     answer: store.answerCall,
     initialize: store.initialize,
     peer: store.peer,
+    activeCall: store.activeCall,
   }));
 
-  const setCallDialog = useAppStore((store) => store.setCallDialog);
+  const { setCallDialog, callsummary, setCallSummary } = useAppStore(
+    (store) => ({
+      setCallDialog: store.setCallDialog,
+      callsummary: store.callSummary,
+      setCallSummary: store.setCallSummary,
+    })
+  );
 
   useEffect(() => {
     if (user && !peer) initialize(user.id);
@@ -34,6 +43,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       if (error.type === "network" || error.type === "unavailable-id") {
         peer.reconnect();
       }
+
       console.error(error);
     });
 
@@ -55,6 +65,36 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       setCallDialog(false);
     };
   }, [peer]);
+
+  useEffect(() => {
+    if (!callsummary) return;
+    onValue(
+      ref(
+        db,
+        `calls/${callsummary.callerId}:${callsummary.receiverId}/${callsummary.id}`
+      ),
+      (snapshot) => {
+        if (!snapshot.exists()) return;
+
+        const data = snapshot.val();
+
+        setCallSummary(data);
+      },
+      (error) => {
+        console.error("callsummary error => ", error);
+      }
+    );
+
+    return () => {};
+  }, [callsummary]);
+
+  useEffect(() => {
+    if (!activeCall) return;
+
+    activeCall.close();
+
+    return () => {};
+  }, [activeCall]);
 
   return (
     <React.Fragment>

@@ -1,4 +1,4 @@
-import { update, ref, set, get, child, onValue } from "firebase/database";
+import { update, ref, set, get, child } from "firebase/database";
 
 import { db } from "../config/firebase";
 
@@ -14,7 +14,7 @@ export default class Firebase {
 
   static async getUsers(): Promise<User[] | null> {
     try {
-      const userSnapshot = await get(child(ref(db), `users`));
+      const userSnapshot = await get(child(ref(db), "users"));
 
       if (!userSnapshot.exists()) return null;
 
@@ -28,6 +28,7 @@ export default class Firebase {
       throw new Error("Failed to get users");
     }
   }
+
   static async getUser(id: string): Promise<User | null> {
     try {
       const userSnapshot = await get(child(ref(db), `users/${id}`));
@@ -61,6 +62,7 @@ export default class Firebase {
       throw new Error("Failed to create call");
     }
   }
+
   static async getCallSummary(
     callerId: string,
     receiverId: string,
