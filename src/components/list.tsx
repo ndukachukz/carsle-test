@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import ListItem from "./list-item";
-import { api } from "@/lib/services/api";
+import Firebase from "@/lib/services/firebase";
 
 const List = () => {
   const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState<User[] | null>();
+  const [users, setUsers] = useState<User[] | null>(null);
 
   useEffect(() => {
     async function getUsers() {
-      const response = await api.getUsers();
+      const response = await Firebase.getUsers();
       setUsers(response);
     }
 
@@ -27,6 +27,8 @@ const List = () => {
           (user, index) =>
             user.id !== currentUser.id && <ListItem key={index} {...user} />
         )}
+
+      {!users && <p>No users</p>}
     </div>
   );
 };

@@ -1,88 +1,105 @@
-import { useEffect, useRef, useState } from "react";
-// import { api } from "../lib/services/api";
+import { useTransition } from "react";
 import { usePeerStore } from "@/store/peer-store";
+import Firebase from "@/lib/services/firebase";
+import { CHARGE_RATE_PER_SEC } from "@/lib/constants";
+import { useUserStore } from "@/store/user-store";
+import { useAppStore } from "@/store/app-store";
 
-// const CHARGE_RATE = 0.1; // $0.1 per second
+export function useCall() {
+  const currentUser = useUserStore((store) => store.user);
 
-export function useCall(currentUser: User | null) {
-  const [activeCall, setActiveCall] = useState<Omit<Call, "id"> | null>(null);
-
-  const { currentVideo, remoteVideo, call } = usePeerStore((store) => ({
-    currentVideo: store.currentVideo,
-    remoteVideo: store.remoteVideo,
-    peer: store.peer,
-    call: store.call,
+  const [pending, startTransition] = useTransition();
+  const { callSummary, setCallSummary } = useAppStore((store) => ({
+    setCallSummary: store.setCallSummary,
+    callSummary: store.callSummary,
   }));
 
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const currentUserVideoRef = useRef<HTMLVideoElement>(null);
+  const { startCall, endCall } = usePeerStore((store) => ({
+    startCall: store.startCall,
+    endCall: store.endCall,
+  }));
 
-  const startCall = async (receiverId: string) => {
+  const call = async (receiverId: string) => {
     if (!currentUser) return;
 
-    const newCall: Omit<Call, "id"> = {
-      callerId: currentUser.id,
-      receiverId,
-      startTime: Date.now(),
-    };
-
-    setActiveCall(newCall);
-
-    // const createdCall = await api.createCall(newCall);
-
-    console.log("Calling... ", receiverId);
-
-    await call(receiverId);
+    startTransition(() => {
+      (async () => {
+        try {
+          await startCall(receiverId);
+        } catch (error) {
+          console.error(error);
+        }
+      })();
+    });
   };
 
-  const endCall = async () => {
-    if (!activeCall || !currentUser) return;
-    /* 
-    const endTime = Date.now();
-    const duration = (endTime - activeCall.startTime) / 1000; // in seconds
-    const cost = duration * CHARGE_RATE;
+  const end = async () => {
+    if (!callSummary || !currentUser) return;
 
-     const updatedCall: Call = {
-      ...activeCall,
-      endTime,
-      duration,
-      cost,
-    };
+    startTransition(() => {
+      (async () => {
+        try {
+          endCall();
 
-    await api.updateCall(updatedCall);
+          const endTime = Date.now();
+          const duration = (endTime - callSummary.startTime) / 1000; // in seconds
+          const cost = duration * CHARGE_RATE_PER_SEC;
 
-    // Update user balances
-    const caller = await api.getUser(activeCall.callerId);
-    const receiver = await api.getUser(activeCall.receiverId);
+          if (currentUser.id === callSummary.receiverId) {
+            const updatedCallSummary: CallSummary = {
+              ...callSummary,
+              endTime,
+              duration,
+              cost,
+            };
 
-    if (caller.isAgent) {
-      await api.updateUser({ ...caller, balance: caller.balance + cost });
-      await api.updateUser({ ...receiver, balance: receiver.balance - cost });
-    } else {
-      await api.updateUser({ ...caller, balance: caller.balance - cost });
-      await api.updateUser({ ...receiver, balance: receiver.balance + cost });
-    }
- */
-    setActiveCall(null);
+            setCallSummary(updatedCallSummary);
+
+            await Firebase.updateCallSummary(
+              callSummary.callerId,
+              updatedCallSummary
+            );
+          }
+
+          // Update user balances
+          const caller = await Firebase.getUser(callSummary.callerId);
+          const receiver = await Firebase.getUser(callSummary.receiverId);
+
+          if (!caller || !receiver) return;
+
+          if (currentUser.id === callSummary.receiverId) {
+            // increment receiver balance
+            await Firebase.updateUser(currentUser.id, {
+              ...caller,
+              balance: caller.balance + cost,
+            });
+
+            // deduct from user
+            await Firebase.updateUser(receiver.id, {
+              ...receiver,
+              balance: receiver.balance - cost,
+            });
+          } else {
+            await Firebase.updateUser(currentUser.id, {
+              ...caller,
+              balance: caller.balance - cost,
+            });
+            await Firebase.updateUser(receiver.id, {
+              ...receiver,
+              balance: receiver.balance + cost,
+            });
+          }
+        } catch (error) {
+          console.error("Error ending call:", error);
+        }
+      })();
+    });
   };
-
-  useEffect(() => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteVideo;
-      remoteVideoRef.current.play();
-    }
-
-    if (currentUserVideoRef.current) {
-      currentUserVideoRef.current.srcObject = currentVideo;
-      currentUserVideoRef.current.play();
-    }
-  }, [remoteVideo, currentVideo, remoteVideoRef, currentUserVideoRef]);
 
   return {
-    activeCall,
-    startCall,
-    endCall,
-    remoteVideoRef,
-    currentUserVideoRef,
+    call,
+    end,
+    pending,
+    activeCallSummary: callSummary,
   };
 }

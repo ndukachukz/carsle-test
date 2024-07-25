@@ -1,42 +1,27 @@
 import { VerificationIcon } from "@/assets/icons";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
-import Call from "./call";
+import { useAppStore } from "@/store/app-store";
 
 const ListItem = ({ id, name, photo_url }: User) => {
+  const { setCallDialog } = useAppStore();
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <div className="rounded overflow-clip ">
-          <img src={photo_url} alt="" className="object-contain" />
+    <div
+      className="rounded overflow-clip cursor-pointer"
+      onClick={() => {
+        setCallDialog(true, id);
+      }}
+    >
+      <img src={photo_url} alt="" className="object-contain" />
 
-          <div className="bg-secondary p-2">
-            <h2 className="flex items-center justify-between text-xs font-semibold text-primary">
-              {name}
-              <VerificationIcon className="size-4" />
-            </h2>
+      <div className="bg-secondary p-2">
+        <h2 className="flex items-center justify-between text-xs font-semibold text-primary">
+          {name}
+          <VerificationIcon className="size-4" />
+        </h2>
 
-            <p className="text-[10px] font-thin">Leadership & Business</p>
-          </div>
-        </div>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Call Consult</DialogTitle>
-          <DialogDescription>Place call to {name}</DialogDescription>
-        </DialogHeader>
-
-        <div>
-          <Call receiverId={id} />
-        </div>
-      </DialogContent>
-    </Dialog>
+        <p className="text-[10px] font-thin">Leadership & Business</p>
+      </div>
+    </div>
   );
 };
 

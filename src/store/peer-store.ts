@@ -1,32 +1,31 @@
+import { genId, getUserMedia } from "@/lib/utils";
 import Peer, { MediaConnection } from "peerjs";
 import { create } from "zustand";
+import { useUserStore } from "./user-store";
+import { useAppStore } from "./app-store";
+import Firebase from "@/lib/services/firebase";
 
 interface PeerState {
   peer: Peer | null;
-  setPeer(peer: PeerState["peer"]): void;
-  peerId: string | null;
-  setPeerId(peerId: PeerState["peerId"]): void;
-
+  activeCall: MediaConnection | null;
   remoteVideo: MediaStream | null;
   setRemoteVideo(remoteVideo: PeerState["remoteVideo"]): void;
   currentVideo: MediaStream | null;
   setCurrentVideo(currentVideo: PeerState["currentVideo"]): void;
 
   initialize(userId: string): Peer;
-  call(userId: string): Promise<void>;
-  answer(call: MediaConnection): Promise<void>;
+  startCall(userId: string): Promise<void>;
+  answerCall(call: MediaConnection): Promise<void>;
+  endCall: () => void;
 }
 
-export const usePeerStore = create<PeerState>()((set) => ({
-  user: null,
+export const usePeerStore = create<PeerState>()((set, get) => ({
   peer: null,
-  peerId: null,
+  activeCall: null,
   remoteVideo: null,
   currentVideo: null,
   setCurrentVideo: (currentVideo) => set(() => ({ currentVideo })),
   setRemoteVideo: (remoteVideo) => set(() => ({ remoteVideo })),
-  setPeer: (peer) => set(() => ({ peer })),
-  setPeerId: (peerId) => set(() => ({ peerId })),
 
   initialize: (userId) => {
     const peer = new Peer(userId);
@@ -35,36 +34,44 @@ export const usePeerStore = create<PeerState>()((set) => ({
 
     return peer;
   },
-  call: async (userId: string) => {
+
+  startCall: async (receiverId: string) => {
+    const callId = genId();
+    const user = useUserStore.getState().user;
+    const setCallSummary = useAppStore.getState().setCallSummary;
+
     const peer = new Peer();
 
     // Initialize PeerJS call here
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
+    const stream = await getUserMedia();
 
     if (!peer) throw new Error("Peer not initialized");
 
     set(() => ({ currentVideo: stream }));
 
-    const call = peer.call(userId, stream);
+    const call = peer.call(receiverId, stream, { metadata: { callId } });
 
-    call.on("stream", (remoteStream) => {
-      set(() => ({ remoteVideo: remoteStream }));
+    call.on("stream", async (remoteStream) => {
+      const newCall: CallSummary = {
+        id: callId,
+        callerId: user!.id,
+        receiverId: receiverId,
+        startTime: Date.now(),
+      };
+
+      setCallSummary(newCall);
+
+      set(() => ({ remoteVideo: remoteStream, activeCall: call }));
+      await Firebase.createCallSummary(user!.id, newCall);
     });
-
-    console.log(call);
   },
 
-  answer: async (call: MediaConnection) => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
+  answerCall: async (call: MediaConnection) => {
+    const stream = await getUserMedia();
+    const user = useUserStore.getState().user;
+    const setCallSummary = useAppStore.getState().setCallSummary;
 
-    console.log("MEDIA STREAM => ", stream);
-    set(() => ({ currentVideo: stream }));
+    set(() => ({ currentVideo: stream, activeCall: call }));
 
     call.answer(stream);
 
@@ -72,5 +79,33 @@ export const usePeerStore = create<PeerState>()((set) => ({
       console.log("REMOTE STREAM => ", remoteStream);
       set(() => ({ remoteVideo: remoteStream }));
     });
+
+    if (!user) return;
+
+    console.log(call.metadata.callId);
+
+    const callSummary = await Firebase.getCallSummary(
+      call.peer,
+      user.id,
+      call.metadata.callId
+    );
+
+    if (callSummary) setCallSummary(callSummary);
+  },
+
+  endCall() {
+    const { activeCall, currentVideo, remoteVideo } = get();
+    if (activeCall) {
+      activeCall.close();
+    }
+
+    if (currentVideo) {
+      currentVideo.getTracks().forEach((track) => track.stop());
+    }
+
+    if (remoteVideo) {
+      remoteVideo.getTracks().forEach((track) => track.stop());
+    }
+    set({ activeCall: null, currentVideo: null, remoteVideo: null });
   },
 }));

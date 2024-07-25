@@ -1,31 +1,35 @@
 import { useEffect } from "react";
-import { api } from "../lib/services/api";
 import { useUserStore } from "@/store/user-store";
+import Firebase from "@/lib/services/firebase";
 
 export function useAuth() {
-  const { setUser, user } = useUserStore(({ user, setUser }) => ({
-    user,
-    setUser,
-  }));
+  const { setUser, user } = useUserStore();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
-      api
-        .getUser(storedUserId)
+      Firebase.getUser(storedUserId)
         .then(setUser)
-        .then(() => {})
-        .catch(() => {
+        .catch((error) => {
+          console.error("Failed to fetch users: ", error);
           localStorage.removeItem("userId");
         });
     }
   }, []);
 
   const signIn = async () => {
-    const users = await api.getUsers();
-    const randomUser = users[Math.floor(Math.random() * users.length)];
-    setUser(randomUser);
-    localStorage.setItem("userId", randomUser.id);
+    try {
+      const users = await Firebase.getUsers();
+
+      if (!users) return;
+
+      const randomUser = users[Math.floor(Math.random() * users.length)];
+
+      setUser(randomUser);
+      localStorage.setItem("userId", randomUser.id);
+    } catch (error) {
+      console.error("unable to login User", error);
+    }
   };
 
   const signOut = () => {

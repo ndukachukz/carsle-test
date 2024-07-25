@@ -1,23 +1,19 @@
 import React, { useEffect } from "react";
 import { useAppStore } from "@/store/app-store";
 import { useAuth } from "@/hooks/useAuth";
-import CallDialog from "./call-dialog";
+import IncomingCallDialog from "./call-dialog";
 import { usePeerStore } from "@/store/peer-store";
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  const { setPeerId, initialize, peer, answer } = usePeerStore((store) => ({
-    setPeerId: store.setPeerId,
-    answer: store.answer,
+  const { initialize, peer, answer } = usePeerStore((store) => ({
+    answer: store.answerCall,
     initialize: store.initialize,
     peer: store.peer,
   }));
 
-  const { openCallDialog, closeCallDialog } = useAppStore((store) => ({
-    openCallDialog: store.openCallDialog,
-    closeCallDialog: store.closeCallDialog,
-  }));
+  const setCallDialog = useAppStore((store) => store.setCallDialog);
 
   useEffect(() => {
     if (user && !peer) initialize(user.id);
@@ -28,15 +24,17 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    console.log("USER => ", user);
+    console.log("USER => ", user.name);
 
-    peer.on("open", (id) => {
-      setPeerId(id);
-      console.log("PEER ID: " + peer.id);
+    peer.on("open", () => {
+      console.log("PEER ID: ", peer.id);
     });
 
     peer.on("error", (error) => {
-      console.log(error);
+      if (error.type === "network" || error.type === "unavailable-id") {
+        peer.reconnect();
+      }
+      console.error(error);
     });
 
     peer.on("disconnected", (id) => {
@@ -47,23 +45,23 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       console.log("call came in from " + call.peer);
 
       if (confirm(`Accept call from ${call.peer}?`)) {
-        openCallDialog();
+        setCallDialog(true);
         await answer(call);
       }
     });
 
     return () => {
       peer.destroy();
-      closeCallDialog();
+      setCallDialog(false);
     };
   }, [peer]);
 
   return (
-    <>
+    <React.Fragment>
       {children}
 
-      <CallDialog />
-    </>
+      <IncomingCallDialog />
+    </React.Fragment>
   );
 }
 

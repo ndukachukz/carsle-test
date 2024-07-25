@@ -22,7 +22,7 @@ interface User {
 }
 
 // Call.ts
-interface Call {
+interface CallSummary {
   id: string;
   callerId: string;
   receiverId: string;

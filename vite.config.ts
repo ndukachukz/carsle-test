@@ -1,8 +1,7 @@
-import path from "path";
 import { defineConfig } from "vite";
-import { VitePWA, type VitePWAOptions } from "vite-plugin-pwa";
-
+import path from "path";
 import react from "@vitejs/plugin-react";
+import { VitePWA, type VitePWAOptions } from "vite-plugin-pwa";
 
 const manifestForPlugin: Partial<VitePWAOptions> = {
   // add this to cache all the imports
@@ -13,14 +12,16 @@ const manifestForPlugin: Partial<VitePWAOptions> = {
   // static assets in the public folder
   includeAssets: ["**/*"],
   registerType: "prompt",
+
   manifest: {
+    orientation: "portrait",
     name: "Carsle",
     short_name: "Carsle",
     description: "PearJS WebRTC PWA app",
     theme_color: "#ffffff",
     icons: [
       {
-        src: "vite.png",
+        src: "./vite.svg",
         sizes: "192x192",
         type: "image/svg",
       },

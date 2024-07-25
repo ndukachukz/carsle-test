@@ -1,13 +1,22 @@
 import { create } from "zustand";
 
 interface AppState {
-  callDialogOpen: boolean;
-  openCallDialog(): void;
-  closeCallDialog(): void;
+  callDialog: boolean;
+  setCallDialog(
+    bool: AppState["callDialog"],
+    receiver?: AppState["callReceiver"]
+  ): void;
+  callReceiver: string | null;
+
+  callSummary: CallSummary | null;
+  setCallSummary(callSummary: CallSummary): void;
 }
 
 export const useAppStore = create<AppState>()((set) => ({
-  callDialogOpen: false,
-  openCallDialog: () => set(() => ({ callDialogOpen: true })),
-  closeCallDialog: () => set(() => ({ callDialogOpen: false })),
+  callDialog: false,
+  callReceiver: null,
+  callSummary: null,
+  setCallDialog: (bool, receiver = null) =>
+    set(() => ({ callDialog: bool, callReceiver: receiver })),
+  setCallSummary: (callSummary) => set(() => ({ callSummary })),
 }));

@@ -18,13 +18,16 @@ export class api {
     return res.data;
   }
 
-  static async createCall(call: Omit<Call, "id">) {
-    const res = await axios.post<Call>(`${API_URL}/calls`, call);
+  static async createCall(call: Omit<CallSummary, "id">) {
+    const res = await axios.post<CallSummary>(`${API_URL}/calls`, call);
     return res.data;
   }
 
-  static async updateCall(call: Call) {
-    const res = await axios.put<Call>(`${API_URL}/calls/${call.id}`, call);
+  static async updateCall(call: CallSummary) {
+    const res = await axios.put<CallSummary>(
+      `${API_URL}/calls/${call.id}`,
+      call
+    );
     return res.data;
   }
 }
