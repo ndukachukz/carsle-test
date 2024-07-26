@@ -9,7 +9,7 @@ import { db } from "@/lib/config/firebase";
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  const { initialize, peer, answer } = usePeerStore((store) => ({
+  const { initialize, peer, answer, activeCall } = usePeerStore((store) => ({
     answer: store.answerCall,
     initialize: store.initialize,
     peer: store.peer,
@@ -87,7 +87,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     );
 
     return () => {};
-  }, []);
+  }, [activeCall]);
 
   return (
     <React.Fragment>
