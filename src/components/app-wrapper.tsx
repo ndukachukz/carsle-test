@@ -87,7 +87,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     );
 
     return () => {};
-  }, [callsummary, setCallSummary]);
+  }, []);
 
   return (
     <React.Fragment>
