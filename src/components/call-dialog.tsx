@@ -44,7 +44,12 @@ const CallDialog = () => {
     <Dialog
       defaultOpen={dialogOpen}
       open={dialogOpen}
-      onOpenChange={setCallDialog}
+      onOpenChange={(open) => {
+        if (!open) {
+          handleEndCall();
+        }
+        setCallDialog(open);
+      }}
     >
       <DialogContent className="max-h-[90vh] md:min-w-[100vh] overflow-y-scroll">
         <DialogHeader aria-describedby="">
