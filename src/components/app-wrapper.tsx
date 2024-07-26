@@ -88,14 +88,6 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     return () => {};
   }, [callsummary]);
 
-  useEffect(() => {
-    if (!activeCall) return;
-
-    activeCall.close();
-
-    return () => {};
-  }, [activeCall]);
-
   return (
     <React.Fragment>
       {children}
