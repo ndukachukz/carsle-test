@@ -18,8 +18,10 @@ export const formatDuration = (durationInSeconds: number) => {
 };
 
 export async function getUserMedia() {
-  return await navigator.mediaDevices.getUserMedia({
+  const stream = await navigator.mediaDevices.getUserMedia({
     audio: true,
     video: true,
   });
+
+  return stream;
 }

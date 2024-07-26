@@ -42,8 +42,10 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
 
     const peer = new Peer();
 
-    // Initialize PeerJS call here
-    const stream = await getUserMedia();
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    });
 
     if (!peer) throw new Error("Peer not initialized");
 

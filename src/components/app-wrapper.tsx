@@ -68,6 +68,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!callsummary) return;
+
     onValue(
       ref(
         db,
