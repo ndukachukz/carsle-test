@@ -67,7 +67,7 @@ export const NAV_MENUS = [
   },
 ] as const;
 
-export const CHARGE_RATE_PER_SEC = 1 as const;
+export const CHARGE_RATE_PER_SEC = 0.1 as const;
 export const CHARGE_RATE_PER_MIN = CHARGE_RATE_PER_SEC * 60;
 
 export const ERRORS = {
