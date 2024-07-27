@@ -48,7 +48,8 @@ const CallDialog = () => {
 
   useEffect(() => {
     if (activeCall && callLimit > 0) {
-      if (callTime / 60 === callLimit) {
+      console.log(callTime === callLimit * 60);
+      if (callTime === callLimit * 60) {
         handleEndCall();
       }
     }
