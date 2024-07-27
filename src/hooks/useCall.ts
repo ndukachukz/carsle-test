@@ -1,22 +1,26 @@
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePeerStore } from "@/store/peer-store";
-import Firebase from "@/lib/services/firebase";
 import { CHARGE_RATE_PER_SEC } from "@/lib/constants";
 import { useUserStore } from "@/store/user-store";
 import { useAppStore } from "@/store/app-store";
+import { handleTransfer, handleUpdateCallSummary } from "@/lib";
+import { startTimer, stopTimer } from "@/lib/utils";
 
 export function useCall() {
   const currentUser = useUserStore((store) => store.user);
+  const [callTime, setCallTime] = useState(0);
 
   const [pending, startTransition] = useTransition();
-  const { callSummary, setCallSummary } = useAppStore((store) => ({
+  const { callSummary, setCallSummary, callDialog } = useAppStore((store) => ({
     setCallSummary: store.setCallSummary,
     callSummary: store.callSummary,
+    callDialog: store.callDialog,
   }));
 
-  const { startCall, endCall } = usePeerStore((store) => ({
+  const { startCall, endCall, activeCall } = usePeerStore((store) => ({
     startCall: store.startCall,
     endCall: store.endCall,
+    activeCall: store.activeCall,
   }));
 
   const call = async (receiverId: string) => {
@@ -34,18 +38,19 @@ export function useCall() {
   };
 
   const end = async () => {
-    if (!callSummary || !currentUser) return;
+    if (!currentUser) return;
 
     startTransition(() => {
-      (async () => {
-        try {
-          endCall();
+      const endTime = Date.now();
 
-          const endTime = Date.now();
+      (async () => {
+        endCall();
+
+        if (callSummary) {
           const duration = (endTime - callSummary.startTime) / 1000; // in seconds
           const cost = duration * CHARGE_RATE_PER_SEC;
 
-          if (currentUser.id === callSummary.receiverId) {
+          if (currentUser.id === callSummary.callerId) {
             const updatedCallSummary: CallSummary = {
               ...callSummary,
               endTime,
@@ -55,51 +60,54 @@ export function useCall() {
 
             setCallSummary(updatedCallSummary);
 
-            await Firebase.updateCallSummary(
+            try {
+              await handleUpdateCallSummary(updatedCallSummary);
+            } catch (error) {
+              console.error("Error updating endcall summary: ", error);
+            }
+          }
+          try {
+            // Update user balances
+            await handleTransfer(
               callSummary.callerId,
-              updatedCallSummary
+              callSummary.receiverId,
+              cost
             );
+          } catch (error) {
+            console.error("Error transfering call: ", error);
           }
-
-          // Update user balances
-          const caller = await Firebase.getUser(callSummary.callerId);
-          const receiver = await Firebase.getUser(callSummary.receiverId);
-
-          if (!caller || !receiver) return;
-
-          if (currentUser.id === callSummary.receiverId) {
-            // increment receiver balance
-            await Firebase.updateUser(currentUser.id, {
-              ...caller,
-              balance: caller.balance + cost,
-            });
-
-            // deduct from user
-            await Firebase.updateUser(receiver.id, {
-              ...receiver,
-              balance: receiver.balance - cost,
-            });
-          } else {
-            await Firebase.updateUser(currentUser.id, {
-              ...caller,
-              balance: caller.balance - cost,
-            });
-            await Firebase.updateUser(receiver.id, {
-              ...receiver,
-              balance: receiver.balance + cost,
-            });
-          }
-        } catch (error) {
-          console.error("Error ending call:", error);
         }
       })();
     });
   };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (activeCall) {
+      setCallTime(0);
+      interval = startTimer(setCallTime);
+    }
+
+    activeCall?.on("close", () => {
+      endCall();
+      stopTimer(interval);
+    });
+
+    return () => {
+      stopTimer(interval);
+    };
+  }, [activeCall]);
+
+  useEffect(() => {
+    if (!callDialog && callTime > 0) setCallTime(0);
+  }, [callDialog, callTime]);
 
   return {
     call,
     end,
     pending,
     activeCallSummary: callSummary,
+    callTime,
   };
 }

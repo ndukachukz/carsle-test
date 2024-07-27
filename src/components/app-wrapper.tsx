@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { useAppStore } from "@/store/app-store";
 import { useAuth } from "@/hooks/useAuth";
-import IncomingCallDialog from "./call-dialog";
+import CallDialog from "./call-dialog";
 import { usePeerStore } from "@/store/peer-store";
-import { onValue, ref } from "firebase/database";
-import { db } from "@/lib/config/firebase";
+import { off, onValue } from "firebase/database";
+import { handleCallSummaryValueChange, handleUserValueChange } from "@/lib";
+import { callRef, userRef } from "@/lib/utils";
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -16,13 +17,11 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     activeCall: store.activeCall,
   }));
 
-  const { setCallDialog, callsummary, setCallSummary } = useAppStore(
-    (store) => ({
-      setCallDialog: store.setCallDialog,
-      callsummary: store.callSummary,
-      setCallSummary: store.setCallSummary,
-    })
-  );
+  const { setCallDialog, callSummary } = useAppStore((store) => ({
+    setCallDialog: store.setCallDialog,
+    callSummary: store.callSummary,
+    setCallSummary: store.setCallSummary,
+  }));
 
   useEffect(() => {
     if (user && !peer) initialize(user.id);
@@ -44,7 +43,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
         peer.reconnect();
       }
 
-      console.error(error);
+      console.error(error, "\n", error.type, "\n", error.message);
     });
 
     peer.on("disconnected", (id) => {
@@ -52,9 +51,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     });
 
     peer.on("call", async (call) => {
-      console.log("call came in from " + call.peer);
-
-      if (confirm(`Accept call from ${call.peer}?`)) {
+      if (confirm(`Accept call from ${call.metadata.user}?`)) {
         setCallDialog(true);
         await answer(call);
       }
@@ -67,33 +64,42 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
   }, [peer]);
 
   useEffect(() => {
-    if (!callsummary) return;
+    if (!activeCall || !callSummary) return;
 
     onValue(
-      ref(
-        db,
-        `calls/${callsummary.callerId}:${callsummary.receiverId}/${callsummary.id}`
-      ),
-      (snapshot) => {
-        if (!snapshot.exists()) return;
-
-        const data = snapshot.val();
-
-        setCallSummary(data);
-      },
+      callRef(callSummary.callerId, callSummary.receiverId, callSummary.id),
+      handleCallSummaryValueChange,
       (error) => {
         console.error("callsummary error => ", error);
       }
     );
 
-    return () => {};
+    return () => {
+      off(
+        callRef(callSummary.callerId, callSummary.receiverId, callSummary.id),
+        "value",
+        handleCallSummaryValueChange
+      );
+    };
+  }, [activeCall]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    onValue(userRef(user.id), handleUserValueChange, (error) => {
+      console.error("user error => ", error);
+    });
+
+    return () => {
+      off(userRef(user.id), "value", handleUserValueChange);
+    };
   }, [activeCall]);
 
   return (
     <React.Fragment>
       {children}
 
-      <IncomingCallDialog />
+      <CallDialog />
     </React.Fragment>
   );
 }

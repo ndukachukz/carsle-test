@@ -69,3 +69,10 @@ export const NAV_MENUS = [
 
 export const CHARGE_RATE_PER_SEC = 1 as const;
 export const CHARGE_RATE_PER_MIN = CHARGE_RATE_PER_SEC * 60;
+
+export const ERRORS = {
+  UNEXPECTED_ERROR: "An unexpected error occurred",
+  NO_USER_FOUND: "No user found",
+  NO_CALL_FOUND: "No call found",
+  INSUFFICIENT_CREDITS: "Insufficient credentials, cannot proceed",
+};

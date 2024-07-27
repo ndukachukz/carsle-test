@@ -76,21 +76,24 @@
 
   font-face {
     font-family: "Poppins";
-    src: url("./assets/fonts/Poppins/Poppins-Thin.ttf") format("truetype");
+    src: local("Poppins-Thin.ttf"),
+      url("./assets/fonts/Poppins/Poppins-Thin.ttf") format("truetype");
     font-weight: 100;
     font-style: normal;
   }
 
   @font-face {
     font-family: "Poppins";
-    src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("truetype");
+    src: local("Poppins-Bold.ttf"),
+      url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("truetype");
     font-weight: 700;
     font-style: normal;
   }
 
   @font-face {
     font-family: "Poppins";
-    src: url("./assets/fonts/Poppins/Poppins-ExtraBold.ttf") format("truetype");
+    src: local("Poppins-ExtraBold.ttf"),
+      url("./assets/fonts/Poppins/Poppins-ExtraBold.ttf") format("truetype");
     font-weight: 800;
     font-style: normal;
   }

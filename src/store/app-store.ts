@@ -6,10 +6,11 @@ interface AppState {
     bool: AppState["callDialog"],
     receiver?: AppState["callReceiver"]
   ): void;
+
   callReceiver: string | null;
 
   callSummary: CallSummary | null;
-  setCallSummary(callSummary: CallSummary): void;
+  setCallSummary(callSummary: AppState["callSummary"]): void;
 }
 
 export const useAppStore = create<AppState>()((set) => ({

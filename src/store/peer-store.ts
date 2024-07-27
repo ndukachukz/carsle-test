@@ -1,9 +1,9 @@
-import { genId, getUserMedia } from "@/lib/utils";
+import { closeUserMedia, genId, getUserMedia } from "@/lib/utils";
 import Peer, { MediaConnection } from "peerjs";
 import { create } from "zustand";
 import { useUserStore } from "./user-store";
 import { useAppStore } from "./app-store";
-import Firebase from "@/lib/services/firebase";
+import FirebaseService from "@/lib/services/firebase-service";
 
 interface PeerState {
   peer: Peer | null;
@@ -28,7 +28,7 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
   setRemoteVideo: (remoteVideo) => set(() => ({ remoteVideo })),
 
   initialize: (userId) => {
-    const peer = new Peer(userId);
+    const peer = get().peer ?? new Peer(userId);
 
     set(() => ({ peer }));
 
@@ -40,18 +40,17 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
     const user = useUserStore.getState().user;
     const setCallSummary = useAppStore.getState().setCallSummary;
 
-    const peer = new Peer();
+    const peer = get().peer;
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
+    const stream = await getUserMedia();
 
     if (!peer) throw new Error("Peer not initialized");
 
-    set(() => ({ currentVideo: stream }));
+    const call = peer.call(receiverId, stream, {
+      metadata: { callId, user: user?.name },
+    });
 
-    const call = peer.call(receiverId, stream, { metadata: { callId } });
+    set(() => ({ currentVideo: stream }));
 
     call.on("stream", async (remoteStream) => {
       const newCall: CallSummary = {
@@ -64,13 +63,17 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
       setCallSummary(newCall);
 
       set(() => ({ remoteVideo: remoteStream, activeCall: call }));
-      await Firebase.createCallSummary(user!.id, newCall);
+
+      await FirebaseService.createCallSummary(newCall);
     });
   },
 
   answerCall: async (call: MediaConnection) => {
+    const peer = get().peer; // current user peer instance
+
+    if (!peer) return;
+
     const stream = await getUserMedia();
-    const user = useUserStore.getState().user;
     const setCallSummary = useAppStore.getState().setCallSummary;
 
     set(() => ({ currentVideo: stream, activeCall: call }));
@@ -78,21 +81,21 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
     call.answer(stream);
 
     call.on("stream", (remoteStream) => {
-      console.log("REMOTE STREAM => ", remoteStream);
       set(() => ({ remoteVideo: remoteStream }));
     });
 
-    if (!user) return;
-
-    console.log(call.metadata.callId);
-
-    const callSummary = await Firebase.getCallSummary(
+    const callSummary = await FirebaseService.getCallSummary(
       call.peer,
-      user.id,
+      peer.id,
       call.metadata.callId
     );
 
-    if (callSummary) setCallSummary(callSummary);
+    console.log(" => ", callSummary);
+
+    if (callSummary) {
+      console.log("gotten Call Summary => ", callSummary);
+      setCallSummary(callSummary);
+    }
   },
 
   endCall() {
@@ -101,13 +104,9 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
       activeCall.close();
     }
 
-    if (currentVideo) {
-      currentVideo.getTracks().forEach((track) => track.stop());
-    }
+    closeUserMedia(currentVideo);
+    closeUserMedia(remoteVideo);
 
-    if (remoteVideo) {
-      remoteVideo.getTracks().forEach((track) => track.stop());
-    }
-    set({ activeCall: null, currentVideo: null, remoteVideo: null });
+    set(() => ({ activeCall: null, currentVideo: null, remoteVideo: null }));
   },
 }));

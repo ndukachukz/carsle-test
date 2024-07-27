@@ -2,12 +2,15 @@ import { defineConfig } from "vite";
 import path from "path";
 import react from "@vitejs/plugin-react";
 import { VitePWA, type VitePWAOptions } from "vite-plugin-pwa";
+import svgr from "vite-plugin-svgr";
 
 const manifestForPlugin: Partial<VitePWAOptions> = {
   // add this to cache all the imports
   workbox: {
     globPatterns: ["**/*"],
+    maximumFileSizeToCacheInBytes: 5 * 1024 ** 2, //5mb
   },
+
   // add this to cache all the
   // static assets in the public folder
   includeAssets: ["**/*"],
@@ -33,7 +36,7 @@ const manifestForPlugin: Partial<VitePWAOptions> = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), VitePWA(manifestForPlugin)],
+  plugins: [react(), svgr(), VitePWA(manifestForPlugin)],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

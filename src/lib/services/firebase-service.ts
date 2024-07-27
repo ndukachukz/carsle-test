@@ -1,11 +1,12 @@
 import { update, ref, set, get, child } from "firebase/database";
 
 import { db } from "../config/firebase";
+import { userRef } from "../utils";
 
-export default class Firebase {
+export default class FirebaseService {
   static async createUser(user: User): Promise<void> {
     try {
-      await set(ref(db, `users/${user.id}`), user);
+      await set(userRef(user.id), user);
     } catch (error) {
       console.error(error);
       throw new Error("Failed to create user");
@@ -51,12 +52,12 @@ export default class Firebase {
     }
   }
 
-  static async createCallSummary(
-    uid: string,
-    call: CallSummary
-  ): Promise<void> {
+  static async createCallSummary(call: CallSummary): Promise<void> {
     try {
-      await set(ref(db, `calls/${uid}:${call.receiverId}/${call.id}`), call);
+      await set(
+        ref(db, `calls/${call.callerId}:${call.receiverId}/${call.id}`),
+        call
+      );
     } catch (error) {
       console.error(error);
       throw new Error("Failed to create call");
@@ -70,7 +71,7 @@ export default class Firebase {
   ): Promise<CallSummary | null> {
     try {
       const snapshot = await get(
-        ref(db, `calls/${callerId}:${receiverId}/${callId}`)
+        child(ref(db), `calls/${callerId}:${receiverId}/${callId}`)
       );
 
       if (!snapshot.exists()) return null;
@@ -82,12 +83,12 @@ export default class Firebase {
     }
   }
 
-  static async updateCallSummary(
-    uid: string,
-    { id, ...data }: CallSummary
-  ): Promise<void> {
+  static async updateCallSummary(data: CallSummary): Promise<void> {
     try {
-      await update(ref(db, `calls/${uid}:${data.receiverId}/${id}`), data);
+      await update(
+        ref(db, `calls/${data.callerId}:${data.receiverId}/${data.id}`),
+        data
+      );
     } catch (error) {
       console.error(error);
       throw new Error("Failed to update call");

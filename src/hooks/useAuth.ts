@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useUserStore } from "@/store/user-store";
-import Firebase from "@/lib/services/firebase";
+import FirebaseService from "@/lib/services/firebase-service";
 
 export function useAuth() {
   const { setUser, user } = useUserStore();
@@ -8,7 +8,7 @@ export function useAuth() {
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
-      Firebase.getUser(storedUserId)
+      FirebaseService.getUser(storedUserId)
         .then(setUser)
         .catch((error) => {
           console.error("Failed to fetch users: ", error);
@@ -19,7 +19,7 @@ export function useAuth() {
 
   const signIn = async () => {
     try {
-      const users = await Firebase.getUsers();
+      const users = await FirebaseService.getUsers();
 
       if (!users) return;
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import ListItem from "./list-item";
-import Firebase from "@/lib/services/firebase";
+import FirebaseService from "@/lib/services/firebase-service";
 
 const List = () => {
   const { user: currentUser } = useAuth();
@@ -9,7 +9,7 @@ const List = () => {
 
   useEffect(() => {
     async function getUsers() {
-      const response = await Firebase.getUsers();
+      const response = await FirebaseService.getUsers();
       setUsers(response);
     }
 

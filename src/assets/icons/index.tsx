@@ -1,3 +1,5 @@
+import { HTMLAttributes } from "react";
+
 import HomeSVG from "./Home_fill.svg";
 import GPSSVG from "./Gps_fixed_fill.svg";
 import UserSVG from "./User_alt_fill.svg";
@@ -8,8 +10,6 @@ import CheckRoundSVG from "./Check_round_fill.svg";
 import SettingSVG from "./Setting_alt_fill.svg";
 import LogoutSvg from "./logout.svg";
 import VerificationSvg from "./Vector.svg";
-
-import { HTMLAttributes } from "react";
 
 type Props = Omit<HTMLAttributes<HTMLImageElement>, "src">;
 

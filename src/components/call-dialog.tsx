@@ -1,3 +1,4 @@
+import { LoaderIcon } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -10,19 +11,28 @@ import { useAppStore } from "@/store/app-store";
 import { useCall } from "@/hooks/useCall";
 import { Button } from "./ui/button";
 import Call from "./call-video";
-import { LoaderIcon } from "lucide-react";
 import { CHARGE_RATE_PER_MIN } from "@/lib/constants";
 import { usePeerStore } from "@/store/peer-store";
-import { useEffect } from "react";
 import { formatDuration } from "@/lib/utils";
 import { useUserStore } from "@/store/user-store";
 
 const CallDialog = () => {
   const user = useUserStore((store) => store.user);
-  const { callDialog: dialogOpen, callReceiver, setCallDialog } = useAppStore();
-  const activeCall = usePeerStore((store) => store.activeCall);
+  const {
+    callDialog: dialogOpen,
+    callReceiver,
+    setCallDialog,
+    setCallSummary,
+  } = useAppStore();
 
-  const { end, pending, call, activeCallSummary } = useCall();
+  const { activeCall, currentVideo } = usePeerStore((store) => ({
+    activeCall: store.activeCall,
+    currentVideo: store.currentVideo,
+  }));
+
+  const callStarted = !!currentVideo && !!activeCall;
+
+  const { end, pending, call, activeCallSummary, callTime } = useCall();
 
   const handleStartCall = () => {
     if (!callReceiver) return;
@@ -33,13 +43,6 @@ const CallDialog = () => {
     end();
   };
 
-  useEffect(() => {
-    activeCall?.on("close", () => {
-      console.log("call ended");
-      handleEndCall();
-    });
-  }, [activeCall]);
-
   return (
     <Dialog
       defaultOpen={dialogOpen}
@@ -47,12 +50,16 @@ const CallDialog = () => {
       onOpenChange={(open) => {
         if (!open) {
           handleEndCall();
+          setCallSummary(null);
         }
         setCallDialog(open);
       }}
     >
-      <DialogContent className="max-h-[90vh] md:min-w-[100vh] overflow-y-scroll">
-        <DialogHeader aria-describedby="">
+      <DialogContent
+        className="max-h-[90vh] md:min-w-[100vh] overflow-y-scroll"
+        aria-describedby="call-dialog"
+      >
+        <DialogHeader>
           <DialogTitle>
             {!callReceiver ? "Incoming Call" : "Consult"}
           </DialogTitle>
@@ -62,36 +69,36 @@ const CallDialog = () => {
           <div className="mb-3">
             {/* render call details when call active */}
 
-            <p>Charge rate $/minute: {CHARGE_RATE_PER_MIN}</p>
+            <p>Charge rate: {CHARGE_RATE_PER_MIN} $/minute</p>
 
-            {activeCallSummary?.duration && (
+            {callTime > 0 && (
               <>
                 <br />
-                <p>duration: {formatDuration(activeCallSummary?.duration)} </p>
+                <p>call time: {formatDuration(callTime)} </p>
               </>
             )}
 
             {activeCallSummary?.cost && (
               <>
                 <br />
-                <p>cost: {activeCallSummary.cost} </p>
+                <p>cost: {activeCallSummary.cost.toFixed(2)} </p>
               </>
             )}
 
             <br />
-            <p>balance: {user?.balance}</p>
+            <p>balance: {user?.balance.toFixed(2)}</p>
           </div>
           <Call />
         </div>
 
         <DialogFooter>
-          {!activeCall && (
+          {callReceiver && (
             <Button onClick={handleStartCall} disabled={pending}>
               start call {pending && <LoaderIcon className="animate-spin" />}
             </Button>
           )}
 
-          {activeCall && (
+          {callStarted && (
             <Button onClick={handleEndCall} disabled={pending}>
               End Call {pending && <LoaderIcon className="animate-spin" />}
             </Button>
