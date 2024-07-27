@@ -35,8 +35,8 @@ export function closeUserMedia(stream: MediaStream | null) {
 
 export const userRef = (uid: string) => ref(db, `users/${uid}`);
 export const usersRef = ref(db, `users/`);
-export const callRef = (callerId: string, receiverId: string, callId: string) =>
-  ref(db, `calls/${callerId}:${receiverId}/${callId}`);
+
+export const callRef = (callId: string) => ref(db, `calls/${callId}`);
 
 export const startTimer = (
   setStateCb: React.Dispatch<React.SetStateAction<number>>

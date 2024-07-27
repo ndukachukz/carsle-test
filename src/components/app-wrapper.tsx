@@ -17,9 +17,10 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     activeCall: store.activeCall,
   }));
 
-  const { setCallDialog, callSummary } = useAppStore((store) => ({
+  const { setCallDialog, callSummaryId } = useAppStore((store) => ({
     setCallDialog: store.setCallDialog,
     callSummary: store.callSummary,
+    callSummaryId: store.callSummaryId,
     setCallSummary: store.setCallSummary,
   }));
 
@@ -32,10 +33,8 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    console.log("USER => ", user.name);
-
     peer.on("open", () => {
-      console.log("PEER ID: ", peer.id);
+      console.log("peer connection open");
     });
 
     peer.on("error", (error) => {
@@ -52,8 +51,10 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
 
     peer.on("call", async (call) => {
       if (confirm(`Accept call from ${call.metadata.user}?`)) {
-        setCallDialog(true);
+        setCallDialog(true, user.id);
         await answer(call);
+      } else {
+        call.close();
       }
     });
 
@@ -64,22 +65,14 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
   }, [peer]);
 
   useEffect(() => {
-    if (!activeCall || !callSummary) return;
+    if (!activeCall || !callSummaryId) return;
 
-    onValue(
-      callRef(callSummary.callerId, callSummary.receiverId, callSummary.id),
-      handleCallSummaryValueChange,
-      (error) => {
-        console.error("callsummary error => ", error);
-      }
-    );
+    onValue(callRef(callSummaryId), handleCallSummaryValueChange, (error) => {
+      console.error("callsummary error => ", error);
+    });
 
     return () => {
-      off(
-        callRef(callSummary.callerId, callSummary.receiverId, callSummary.id),
-        "value",
-        handleCallSummaryValueChange
-      );
+      off(callRef(callSummaryId), "value", handleCallSummaryValueChange);
     };
   }, [activeCall]);
 

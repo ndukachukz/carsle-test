@@ -20,7 +20,7 @@ const CallDialog = () => {
   const user = useUserStore((store) => store.user);
   const {
     callDialog: dialogOpen,
-    callReceiver,
+    uid: callReceiver,
     setCallDialog,
     setCallSummary,
   } = useAppStore();
@@ -61,7 +61,7 @@ const CallDialog = () => {
       >
         <DialogHeader>
           <DialogTitle>
-            {!callReceiver ? "Incoming Call" : "Consult"}
+            {callReceiver === user?.id ? "Incoming Call" : "Consult"}
           </DialogTitle>
         </DialogHeader>
 
@@ -92,7 +92,7 @@ const CallDialog = () => {
         </div>
 
         <DialogFooter>
-          {callReceiver && (
+          {callReceiver !== user?.id && !activeCall && (
             <Button onClick={handleStartCall} disabled={pending}>
               start call {pending && <LoaderIcon className="animate-spin" />}
             </Button>

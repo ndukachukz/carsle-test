@@ -2,22 +2,25 @@ import { create } from "zustand";
 
 interface AppState {
   callDialog: boolean;
-  setCallDialog(
-    bool: AppState["callDialog"],
-    receiver?: AppState["callReceiver"]
-  ): void;
+  setCallDialog(bool: AppState["callDialog"], uid?: AppState["uid"]): void;
 
-  callReceiver: string | null;
+  // peer id
+  uid: string | null;
 
   callSummary: CallSummary | null;
   setCallSummary(callSummary: AppState["callSummary"]): void;
+
+  callSummaryId: string | null;
+  setCallSummaryId(callSummaryId: AppState["callSummaryId"]): void;
 }
 
 export const useAppStore = create<AppState>()((set) => ({
   callDialog: false,
-  callReceiver: null,
+  uid: null,
   callSummary: null,
+  callSummaryId: null,
   setCallDialog: (bool, receiver = null) =>
-    set(() => ({ callDialog: bool, callReceiver: receiver })),
+    set(() => ({ callDialog: bool, uid: receiver })),
   setCallSummary: (callSummary) => set(() => ({ callSummary })),
+  setCallSummaryId: (id) => set(() => ({ callSummaryId: id })),
 }));

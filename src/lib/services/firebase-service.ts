@@ -54,25 +54,16 @@ export default class FirebaseService {
 
   static async createCallSummary(call: CallSummary): Promise<void> {
     try {
-      await set(
-        ref(db, `calls/${call.callerId}:${call.receiverId}/${call.id}`),
-        call
-      );
+      await set(ref(db, `calls/${call.id}`), call);
     } catch (error) {
       console.error(error);
       throw new Error("Failed to create call");
     }
   }
 
-  static async getCallSummary(
-    callerId: string,
-    receiverId: string,
-    callId: string
-  ): Promise<CallSummary | null> {
+  static async getCallSummary(callId: string): Promise<CallSummary | null> {
     try {
-      const snapshot = await get(
-        child(ref(db), `calls/${callerId}:${receiverId}/${callId}`)
-      );
+      const snapshot = await get(child(ref(db), `calls/${callId}`));
 
       if (!snapshot.exists()) return null;
 

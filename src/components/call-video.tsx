@@ -25,13 +25,18 @@ export default function CallVideo() {
   return (
     <div className="md:flex gap-3">
       {remoteVideo && (
-        <video ref={remoteVideoRef} className="w-1/2" autoPlay playsInline />
+        <video
+          ref={remoteVideoRef}
+          className="w-full md:w-1/2"
+          autoPlay
+          playsInline
+        />
       )}
 
       {currentVideo && (
         <video
           ref={currentUserVideoRef}
-          className="w-1/2"
+          className="w-full md:w-1/2"
           autoPlay
           playsInline
           muted
